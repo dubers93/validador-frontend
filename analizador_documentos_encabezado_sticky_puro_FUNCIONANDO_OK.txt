@@ -1,0 +1,242 @@
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Validar Documentos AMIB</title>
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+  <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      padding: 30px;
+      background-color: #ffffff;
+      text-align: center;
+    }
+    table.dataTable {
+      table-layout: fixed !important;
+      width: 100% !important;
+    }
+    table.dataTable th, table.dataTable td {
+      white-space: pre-line !important;
+      overflow-wrap: break-word !important;
+    }
+    #tablaValidacion {
+      font-size: 13px;
+    }
+    #tablaValidacion thead th {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+      background-color: #339af0 !important;
+      color: #ffffff !important;
+    }
+    .fixedHeader-floating {
+      background-color: #339af0 !important;
+      color: #ffffff !important;
+    }
+    .fixedHeader-floating th {
+      background-color: #339af0 !important;
+      color: #ffffff !important;
+    }
+	
+	#analizarBtn {
+      padding: 12px 24px;
+      background-color: #0d6efd;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+    }
+    #analizarBtn:hover:not(:disabled) {
+      background-color: #0b5ed7;
+    }
+    #analizarBtn:disabled {
+      background-color: #6c757d;
+      cursor: not-allowed;
+    }
+	
+    #tablaValidacion tbody tr:nth-child(odd) {
+      background-color: #ffffff;
+    }
+    #tablaValidacion tbody tr:nth-child(even) {
+      background-color: #f0f0f0;
+    }
+    #tablaValidacion tbody tr:hover {
+      background-color: #0d6efd !important;
+      color: #ffffff !important;
+    }
+    #toast {
+      visibility: hidden;
+      min-width: 200px;
+      background-color: #0d6efd;
+      color: #fff;
+      text-align: center;
+      border-radius: 5px;
+      padding: 12px;
+      position: fixed;
+      z-index: 100;
+      left: 50%;
+      bottom: 30px;
+      transform: translateX(-50%);
+      font-size: 14px;
+      box-shadow: 0px 0px 12px rgba(0,0,0,0.2);
+      opacity: 0;
+      transition: opacity 0.5s ease-in-out;
+    }
+    #toast.show {
+      visibility: visible;
+      opacity: 1;
+    }
+	
+	
+	.spinner {
+  display: inline-block;
+  width: 32px;
+  height: 32px;
+  border: 2px solid #fff;
+  border-top: 2px solid #0d6efd;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin-right: 10px;
+  vertical-align: middle;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+	
+  </style>
+</head>
+<body>
+  <h2>Validar Documentos AMIB</h2>
+  <button id="analizarBtn" onclick="document.getElementById('inputArchivos').click()">Cargar y Validar Documentos</button>
+  <input type="file" id="inputArchivos" accept="application/pdf" multiple style="display: none;" />
+  
+  
+<div id="loading" style="display: none; font-weight: bold; color: #0d6efd;">
+ <br></br> <span class="spinner"></span><br></br> Analizando documentos, por favor espera...
+<br></br>
+</div>
+
+  
+  <div class="info" id="infoArchivos" style="margin-top: 12px;"></div>
+  <div id="tablaResultados">
+    <div id="toast">Fila copiada al portapapeles ✅</div>
+    <table id="tablaValidacion" class="display nowrap" style="width:100%"></table>
+  </div>
+
+  <script>
+    let archivosSeleccionados = [];
+
+    document.getElementById("inputArchivos").addEventListener("change", function () {
+      archivosSeleccionados = Array.from(this.files);
+      if (archivosSeleccionados.length > 0) {
+        document.getElementById("infoArchivos").innerText =
+          archivosSeleccionados.length + " archivo(s) seleccionado(s).";
+        analizarArchivos();
+      }
+    });
+
+    async function analizarArchivos() {
+	
+	      // Reset tabla
+      if ($.fn.DataTable.isDataTable("#tablaValidacion")) {
+        $('#tablaValidacion').DataTable().clear().destroy();
+        document.getElementById("tablaValidacion").innerHTML = "";
+      }
+      document.getElementById("tablaResultados").style.display = "none";
+	
+      const btn = document.getElementById("analizarBtn");
+      const loading = document.getElementById("loading");
+      btn.disabled = true;
+      loading.style.display = "block";
+
+      document.getElementById("tablaValidacion").innerHTML = "";
+
+      await fetch("http://localhost:8080/api/pdf/reset").catch(err => alert("Error al reiniciar datos."));
+
+      for (let archivo of archivosSeleccionados) {
+        const formData = new FormData();
+        formData.append("archivo", archivo);
+        await fetch("http://localhost:8080/api/pdf/analizar", {
+          method: "POST",
+          body: formData
+        }).catch(error => console.error("Error al subir:", archivo.name, error));
+      }
+
+      try {
+        const response = await fetch("http://localhost:8080/api/pdf/validar");
+        const data = await response.json();
+        mostrarTablaResultados(data);
+      } catch (error) {
+        console.error("Error al obtener resultados de validación:", error);
+        alert("⚠ Error inesperado al procesar los resultados.");
+      }
+
+      btn.disabled = false;
+      loading.style.display = "none";
+    }
+
+    function mostrarTablaResultados(data) {
+      const filas = data.map(res => [
+        res.nombrePersona || "",
+        res.comentariosBc || "",
+        res.resultadoBcRfc || "",
+        res.resultadoRfcCurp || "",
+        res.resultadoBcCurp || "",
+        res.archivoBc || "",
+        res.archivoRfc || "",
+        res.archivoCurp || ""
+      ]);
+
+      if ($.fn.DataTable.isDataTable("#tablaValidacion")) {
+        $('#tablaValidacion').DataTable().clear().destroy();
+      }
+
+      const tabla = $('#tablaValidacion').DataTable({
+        data: filas,
+        columns: [
+          { title: "Nombre Persona", width: "250px" },
+          { title: "Comentarios BC", width: "400px" },
+          { title: "Resultado BC ↔ RFC", width: "200px" },
+          { title: "Resultado RFC ↔ CURP", width: "200px" },
+          { title: "Resultado BC ↔ CURP", width: "200px" },
+          { title: "Archivo BC", width: "50px", visible: false },
+          { title: "Archivo RFC", width: "50px", visible: false },
+          { title: "Archivo CURP", width: "50px", visible: false }
+        ],
+        fixedHeader: true,
+        autoWidth: false,
+        paging: false,
+        language: {
+          url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-MX.json'
+        }
+      });
+
+     // tabla.columns.adjust().draw();
+	  
+	   document.getElementById("tablaResultados").style.display = "block";
+	  
+    }
+
+    $(document).on('dblclick', '#tablaValidacion tbody tr', function () {
+      const datosFila = $(this).children("td:visible").map(function () {
+        return $(this).text();
+      }).get().join('\t');
+      navigator.clipboard.writeText(datosFila)
+        .then(() => {
+          const toast = document.getElementById("toast");
+          toast.classList.add("show");
+          setTimeout(() => toast.classList.remove("show"), 2000);
+        })
+        .catch(err => console.error("Error al copiar:", err));
+    });
+  </script>
+</body>
+</html>
