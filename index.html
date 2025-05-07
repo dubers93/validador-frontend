@@ -3,7 +3,7 @@
    <head>
       <meta charset="UTF-8" />
       <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-      <title>Validar Documentos AMIB</title>
+      <title>Analizar Documentos</title>
       <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
       <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
       <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -141,12 +141,12 @@
       </style>
    </head>
    <body>
-      <h2>Validar Documentos AMIB</h2>
-      <button id="analizarBtn" onclick="document.getElementById('inputArchivos').click()">Cargar y Validar Documentos</button>
+      <h2>Analizar Documentos</h2>
+      <button id="analizarBtn" onclick="document.getElementById('inputArchivos').click()">Cargar y Analizar Documentos</button>
       <input type="file" id="inputArchivos" accept="application/pdf" multiple style="display: none;" />
-      <button id="descargarZipBtn" onclick="descargarZip()" disabled>Descargar archivos (.zip)</button>
+      <button id="descargarZipBtn" onclick="descargarZip()" disabled>Descargar Archivos Analizados(.zip)</button>
       <div id="loading" style="display: none; font-weight: bold; color: #0d6efd;">
-         <br></br> <span class="spinner"></span><br></br> Analizando documentos, por favor espera...
+         <br></br> <span class="spinner"></span><br></br>Analizando documentos, por favor espera...
          <br></br>
       </div>
       <div class="info" id="infoArchivos" style="margin-top: 12px;"></div>
@@ -224,7 +224,7 @@
 		formData.append("archivo", archivo);
 
 		// 👉 Mostrar mensaje de progreso al subir
-		loading.innerHTML = `<br><span class="spinner"></span><br> Subiendo archivo ${i + 1} de ${archivosSeleccionados.length}...<br>`;
+		loading.innerHTML = `<br><span class="spinner"></span><br> Analizando archivo ${i + 1} de ${archivosSeleccionados.length}...<br>`;
 		//await fetch("http://localhost:8080/api/pdf/analizar", {
 		await fetch("https://validador-docker.onrender.com/api/pdf/analizar", {
 		method: "POST",
@@ -237,7 +237,7 @@
          // Obtener resultados
          try {
          //const response = await fetch("http://localhost:8080/api/pdf/resumen");
-		 loading.innerHTML = `<br><span class="spinner"></span><br> Analizando documentos, por favor espera...<br>`;
+		 loading.innerHTML = `<br><span class="spinner"></span><br> Generando reporte, por favor espera...<br>`;
 		 const response = await fetch("https://validador-docker.onrender.com/api/pdf/resumen");
          const data = await response.json();
          mostrarTablaResultados(data.validaciones);
