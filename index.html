@@ -224,7 +224,7 @@
 		formData.append("archivo", archivo);
 
 		// 👉 Mostrar mensaje de progreso al subir
-		loading.innerHTML = `<br><span class="spinner"></span><br> Siendo archivo ${i + 1} de ${archivosSeleccionados.length}...<br>`;
+		loading.innerHTML = `<br><span class="spinner"></span><br> Subiendo archivo ${i + 1} de ${archivosSeleccionados.length}...<br>`;
 		//await fetch("http://localhost:8080/api/pdf/analizar", {
 		await fetch("https://validador-docker.onrender.com/api/pdf/analizar", {
 		method: "POST",
