@@ -214,7 +214,7 @@
          // Reiniciar backend
          //await fetch("http://localhost:8080/api/pdf/reset").catch(err => alert("Error al reiniciar datos."));
          //await fetch("https://validador-docker.onrender.com/api/pdf/reset").catch(err => alert("Error al reiniciar datos."));
-		 await fetch("http://95.111.230.39:8080/api/pdf/reset").catch(err => alert("Error al reiniciar datos."));
+		 await fetch("https://valida-archivos.duckdns.org/api/pdf/reset").catch(err => alert("Error al reiniciar datos."));
 		 
 		 
          // Subir cada archivo
@@ -227,7 +227,7 @@
 		loading.innerHTML = `<br><span class="spinner"></span><br> Analizando archivo ${i + 1} de ${archivosSeleccionados.length}...<br>`;
 		//await fetch("http://localhost:8080/api/pdf/analizar", {
 		//await fetch("https://validador-docker.onrender.com/api/pdf/analizar", {
-		await fetch("http://95.111.230.39:8080/api/pdf/analizar", {
+		await fetch("https://valida-archivos.duckdns.org/api/pdf/analizar", {
 		
 		method: "POST",
 		body: formData
@@ -241,7 +241,7 @@
 		 loading.innerHTML = `<br><span class="spinner"></span><br> Generando reporte, por favor espera...<br>`;
 		 //const response = await fetch("http://localhost:8080/api/pdf/resumen");
 		 //const response = await fetch("https://validador-docker.onrender.com/api/pdf/resumen");
-         const response = await fetch("http://95.111.230.39:8080/api/pdf/resumen");
+         const response = await fetch("https://valida-archivos.duckdns.org/api/pdf/resumen");
 		 
 		 const data = await response.json();
          mostrarTablaResultados(data.validaciones);
@@ -367,7 +367,7 @@
          
          //fetch("http://localhost:8080/api/pdf/descargarZip")
 		 //fetch("https://validador-docker.onrender.com/api/pdf/descargarZip")
-         fetch("http://95.111.230.39:8080/api/pdf/descargarZip")
+         fetch("https://valida-archivos.duckdns.org/api/pdf/descargarZip")
 
 		.then(response => {
            if (!response.ok) throw new Error("No se pudo descargar el archivo");
